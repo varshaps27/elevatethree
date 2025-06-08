@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book API Interface</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      margin: 40px auto;
+      max-width: 650px;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      color: #222;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 40px;
+      font-weight: 700;
+    }
+
+    h2 {
+      color: #34495e;
+      border-bottom: 3px solid #2980b9;
+      padding-bottom: 6px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    input[type="text"] {
+      padding: 12px 15px;
+      font-size: 16px;
+      width: calc(50% - 14px);
+      margin-right: 10px;
+      margin-bottom: 15px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #2980b9;
+      box-shadow: 0 0 8px rgba(41, 128, 185, 0.4);
+    }
+
+    button {
+      padding: 12px 22px;
+      font-size: 16px;
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.25s ease;
+    }
+    button:hover {
+      background-color: #1c5980;
+    }
+
+    #booksContainer {
+      margin-top: 25px;
+    }
+
+    .book {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.15s ease;
+    }
+    .book:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+
+    .book strong {
+      font-size: 18px;
+      color: #2c3e50;
+    }
+
+    .book button {
+      background-color: #e74c3c;
+      padding: 8px 14px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    .book button:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 Book API Interface</h1>
+
+  <h2>Add a Book</h2>
+  <input type="text" id="title" placeholder="Title">
+  <input type="text" id="author" placeholder="Author">
+  <button onclick="addBook()">Add Book</button>
+
+  <h2>Get All Books</h2>
+  <button onclick="getBooks()">Show Books</button>
+  <div id="booksContainer"></div>
+
+  <script>
+    const API_URL = "http://localhost:2718";
+
+    async function addBook() {
+      const title = document.getElementById("title").value;
+      const author = document.getElementById("author").value;
+
+      const res = await fetch(`${API_URL}/books`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, author }),
+      });
+
+      const data = await res.json();
+      alert("Book added: " + JSON.stringify(data));
+      getBooks();
+    }
+
+    async function getBooks() {
+      const res = await fetch(`${API_URL}/books`);
+      const books = await res.json();
+
+      const container = document.getElementById("booksContainer");
+      container.innerHTML = "";
+
+      books.forEach(book => {
+        const div = document.createElement("div");
+        div.className = "book";
+        div.innerHTML = `
+          <strong>${book.title}</strong> by ${book.author} (ID: ${book.id})<br>
+          <button onclick="deleteBook(${book.id})">Delete</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function deleteBook(id) {
+      const res = await fetch(`${API_URL}/books/${id}`, {
+        method: "DELETE"
+      });
+
+      const result = await res.json();
+      alert(result.message);
+      getBooks();
+    }
+  </script>
+</body>
+</html>
